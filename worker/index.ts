@@ -1,3 +1,4 @@
+import { postUrl, readPost } from './naver';
 import { findEvidence, rulesVersion } from './rules';
 
 const reply = (data: unknown, status = 200) => Response.json(data, {
@@ -40,7 +41,13 @@ export default {
     let body;
     try { body = JSON.parse(raw + decoder.decode()); }
     catch { return reply({ error: 'input' }, 400); }
-    const text = typeof body?.text === 'string' ? body.text.trim() : '';
+    let text = typeof body?.text === 'string' ? body.text.trim() : '';
+    if (body?.url !== undefined) {
+      const url = typeof body.url === 'string' && postUrl(body.url);
+      if (!url || body.text !== undefined) return reply({ error: 'unsupported_url' }, 422);
+      try { text = await readPost(url); }
+      catch (err) { console.warn('Import failed', err instanceof Error ? err.name + ' ' + err.message : 'unknown'); return reply({ error: 'manual_input' }, 422); }
+    }
     if (!text || text.length > 20000) return reply({ error: 'input' }, 400);
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rulesVersion + '\n' + text));
     const key = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');

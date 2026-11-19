@@ -10,7 +10,7 @@ function App() {
   const [text, setText] = useState('');
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<'error' | 'limited' | null>(null);
+  const [error, setError] = useState<'error' | 'limited' | 'manual' | null>(null);
   const t = copy[lang];
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -34,8 +34,12 @@ function App() {
     history.replaceState(null, '', location.pathname);
     try {
       const response = await fetch('/api/analyses', {
-        method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ text })
+        method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(/^https?:\/\/\S+$/i.test(text.trim()) ? { url: text.trim() } : { text })
       });
+      if (response.status === 422) {
+        setError('manual');
+        return;
+      }
       if (response.status === 429) {
         setError('limited');
         return;
