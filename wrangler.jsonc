@@ -1,0 +1,11 @@
+{
+  "name": "exitviral",
+  "main": "worker/index.ts",
+  "compatibility_date": "2025-10-01",
+  "assets": { "directory": "./dist", "run_worker_first": ["/api/*"] },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "exitviral",
+    "database_id": "00000000-0000-0000-0000-000000000001"
+  }]
+}

@@ -1,0 +1,6 @@
+CREATE TABLE analyses (
+  id TEXT PRIMARY KEY,
+  cache_key TEXT NOT NULL UNIQUE,
+  evidence TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
