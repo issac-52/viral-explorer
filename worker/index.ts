@@ -9,7 +9,7 @@ function result(row: Row, status = 200) {
 }
 
 export default {
-  async fetch(request: Request, env: { DB: D1Database }) {
+  async fetch(request: Request, env: { DB: D1Database; ANALYSIS_LIMIT: RateLimit }) {
     const path = new URL(request.url).pathname;
     const id = path.match(/^\/api\/analyses\/([a-f0-9-]{36})$/)?.[1];
     if (id && request.method === 'GET') {
@@ -19,6 +19,9 @@ export default {
     if (path !== '/api/analyses') return reply({ error: 'not_found' }, 404);
     if (request.method !== 'POST') return reply({ error: 'method' }, 405);
     if (!request.headers.get('content-type')?.startsWith('application/json')) return reply({ error: 'content_type' }, 415);
+    const client = request.headers.get('CF-Connecting-IP') || 'local';
+    const { success } = await env.ANALYSIS_LIMIT.limit({ key: client });
+    if (!success) return reply({ error: 'rate_limited' }, 429);
     const reader = request.body?.getReader();
     if (!reader) return reply({ error: 'input' }, 400);
     const decoder = new TextDecoder();

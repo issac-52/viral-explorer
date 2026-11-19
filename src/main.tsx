@@ -10,7 +10,7 @@ function App() {
   const [text, setText] = useState('');
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [busy, setBusy] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [error, setError] = useState<'error' | 'limited' | null>(null);
   const t = copy[lang];
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -24,23 +24,27 @@ function App() {
     fetch('/api/analyses/' + encodeURIComponent(id)).then(async response => {
       if (!response.ok) throw Error();
       setAnalysis(await response.json());
-    }).catch(() => setFailed(true)).finally(() => setBusy(false));
+    }).catch(() => setError('error')).finally(() => setBusy(false));
   }, []);
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setFailed(false);
+    setError(null);
     setAnalysis(null);
     history.replaceState(null, '', location.pathname);
     try {
       const response = await fetch('/api/analyses', {
         method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ text })
       });
+      if (response.status === 429) {
+        setError('limited');
+        return;
+      }
       if (!response.ok) throw Error();
       const data: Analysis = await response.json();
       setAnalysis(data);
       history.replaceState(null, '', '?result=' + data.id);
-    } catch { setFailed(true); }
+    } catch { setError('error'); }
     finally { setBusy(false); }
   }
   return <>
@@ -54,7 +58,7 @@ function App() {
         <div className="actions"><small>{text.length.toLocaleString(lang)} / 20,000</small>
           <button disabled={busy || !text.trim()}>{busy ? t.busy : t.run}</button></div>
       </form>
-      <div aria-live="polite">{failed && <p role="alert">{t.error}</p>}
+      <div aria-live="polite">{error && <p role="alert">{t[error]}</p>}
         {analysis && <section><h2>{analysis.evidence.length ? t.found : t.empty}</h2>
           {analysis.evidence.map(quote => <blockquote key={quote}>{quote}</blockquote>)}<p>{t.note}</p></section>}
       </div>

@@ -19,10 +19,48 @@ npm run dev
 - POST /api/analyses — JSON 본문 `{"text":"후기 내용"}`. 최대 20,000 UTF-16 코드 단위. 최초 저장 시 201, 재사용 시 200.
 - GET /api/analyses/{id} — 저장된 ID와 인용 문구 배열을 반환합니다. 결과 주소를 가진 사람은 인용 문구를 열람할 수 있습니다.
 
-D1에는 원문 전체 대신 규칙 버전을 포함한 본문 해시, 임의 결과 ID, 일치한 표현과 생성 시각을 저장합니다. 광고 여부 확률을 산출하지 않습니다. wrangler.jsonc의 데이터베이스 UUID는 로컬 개발용입니다. 운영 배포에는 실제 D1 연결, 원격 마이그레이션 및 요청량 제한 설정이 필요합니다.
+D1에는 원문 전체 대신 규칙 버전을 포함한 본문 해시, 임의 결과 ID, 일치한 표현과 생성 시각을 저장합니다. 광고 여부 확률을 산출하지 않습니다. wrangler.jsonc의 데이터베이스 UUID는 로컬 개발용입니다. 운영 배포에는 실제 D1 연결과 원격 마이그레이션이 필요합니다.
 
 ## 규칙과 LLM 비교 실험
 
 `node eval/run.mjs`는 실제 서비스 규칙을 사용해 한국어·일본어·영어 사례의 오탐과 누락을 집계합니다. 각 언어에 협찬·제휴 고지 4개와 부정·타인 인용·일반 후기 4개를 넣었습니다. 직접 작성한 짧은 진단 사례이며 실사용 빈도를 대표하지 않습니다.
 
 `node eval/run.mjs --llm`은 같은 본문 24개를 한 번씩 OpenAI에 보내고 원문 인용을 검증합니다. 셸 환경에 OPENAI_API_KEY, EVAL_INPUT_USD_PER_M, EVAL_OUTPUT_USD_PER_M을 설정하세요. 단가는 해당 모델의 입력·출력 100만 토큰당 달러입니다. 기본 모델은 gpt-4o-mini이고 EVAL_MODEL로 변경할 수 있습니다. 실행할 때마다 비용이 발생할 수 있습니다. 오류 시 자동 재시도 없이 중단합니다. usdPer1000은 이 길이의 후기를 전부 API로 분석할 때의 토큰 비용 추정치이며, 실제 트래픽에서는 호출 비율과 본문 길이에 따라 달라집니다.
+
+## Cloudflare 첫 배포
+
+1. Cloudflare 무료 계정을 준비하고 Node.js 24와 Git을 설치합니다. 저장소를 받아 의존성을 설치합니다.
+
+   ```sh
+   git clone https://github.com/issac-52/viral-explorer.git
+   cd viral-explorer
+   npm ci
+   npm test
+   npm run build
+   ```
+
+2. 터미널에서 로그인하고 대상 계정을 확인합니다.
+
+   ```sh
+   npx wrangler login
+   npx wrangler whoami
+   ```
+
+3. 운영 D1을 한 번 생성합니다. 한국·일본 사용자를 고려해 아시아 태평양 위치를 요청합니다. 이미 만들었다면 `npx wrangler d1 list`에서 기존 ID를 확인합니다.
+
+   ```sh
+   npx wrangler d1 create exitviral --location apac --update-config=false
+   ```
+
+4. 저장소 루트의 `wrangler.jsonc`에서 기존 `database_id` 값을 위 출력의 UUID로 교체하고 저장합니다. 바인딩 이름은 `DB`입니다. 계정에 다른 Worker가 rate limiting namespace 1001을 사용한다면 이 앱의 namespace_id를 별도 숫자 문자열로 지정합니다.
+
+5. 운영 D1에 테이블을 만든 뒤 배포합니다. Wrangler가 workers.dev 서브도메인 등록을 안내하면 이 계정에서 사용할 이름을 선택합니다.
+
+   ```sh
+   npx wrangler d1 migrations apply DB --remote
+   npx wrangler deploy
+   ```
+
+6. 출력된 workers.dev 주소에서 “제품을 제공받아 작성했어요”를 분석합니다. 결과에 원문 표현이 뜨고 결과 주소를 새로고침한 뒤에도 같은 결과가 나오면 정적 화면, Worker, 운영 D1이 연결된 상태입니다. 이후 업데이트 시 빌드 → 운영 마이그레이션 → 배포 순서를 따릅니다.
+
+분석 POST에는 Cloudflare 위치별로 IP당 60초에 20회 제한이 적용됩니다. 공유 IP의 사용자는 한도를 공유합니다. 전체 계정 사용량은 Cloudflare 대시보드의 Workers 및 D1 사용량에서 확인하세요. 공개 베타에는 Workers Free와 기본 workers.dev 주소로 시작할 수 있습니다.
