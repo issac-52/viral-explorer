@@ -1,5 +1,6 @@
 export const copy = {
   ko: {
+    recent: "탐색한 기록", noRecent: "분석을 마치면 이 브라우저에 최근 기록이 최대 10건 표시돼요.", source: "원문",
     direct: "고지 예문",
     quotation: "인용 예문",
     quotePrefix: "옆 글에는 ‘",
@@ -22,6 +23,7 @@ export const copy = {
     suffix: " 일주일 동안 사용한 뒤 작성했습니다.",
     manual:'이 링크에서 본문을 가져올 수 없어요. 주소 대신 후기 본문을 붙여넣어 주세요.', limited:'요청이 많아요. 1분 후 다시 시도해 주세요.', brand:'엑싯바이럴', language:'표시 언어', title:'이 후기, 협찬일까?', intro:'후기 본문에서 광고·협찬을 알리는 표현을 찾아보세요.', label:'지원하는 블로그 글 주소 또는 후기 본문', placeholder:'확인하고 싶은 후기를 붙여넣으세요.', run:'고지 문구 찾기', busy:'확인 중…', found:'고지와 관련된 표현을 찾았어요', empty:'등록된 고지 표현을 찾지 못했어요', note:'문맥에 따라 잘못 감지하거나 고지를 놓칠 수 있어요. 실제 협찬 여부는 원문과 함께 판단하세요.', error:'요청을 처리할 수 없어요. 다시 시도해 주세요.' },
   ja: {
+    recent: "分析履歴", noRecent: "分析すると、このブラウザーに直近10件まで表示されます。", source: "原文",
     direct: "提供の例",
     quotation: "引用の例",
     quotePrefix: "別の記事には「",
@@ -44,6 +46,7 @@ export const copy = {
     suffix: "、一週間使用してから書きました。",
     manual:'本文を取得できませんでした。URLの代わりにレビュー本文を貼り付けてください。', limited:'リクエストが集中しています。1分後にお試しください。', brand:'ExitViral', language:'表示言語', title:'このレビュー、PRかな？', intro:'レビュー本文から広告や提供に関する表現を探します。', label:'対応ブログの記事URLまたはレビュー本文', placeholder:'確認したいレビューを貼り付けてください。', run:'表記を確認', busy:'確認中…', found:'広告・提供に関連する表現が見つかりました', empty:'登録済みの表現は見つかりませんでした', note:'文脈による誤検出や見落としがあります。実際の提供関係は原文とあわせてご判断ください。', error:'リクエストを処理できませんでした。もう一度お試しください。' },
   en: {
+    recent: "Recent analyses", noRecent: "Your last 10 analyses appear here in this browser.", source: "Source",
     direct: "Disclosure",
     quotation: "Quotation",
     quotePrefix: "Her blog said “",

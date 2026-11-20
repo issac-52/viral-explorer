@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { copy, type Language } from './copy';
 import * as Tabs from '@radix-ui/react-tabs';
 import { ScanText, ArrowUpRight, ArrowRight, Globe2, Quote, TextSearch, LoaderCircle } from 'lucide-react';
+import { readRecent, recentKey, remember } from './recent';
 import './style.css';
 
 import type { Excerpt } from '../worker/rules';
@@ -11,6 +12,14 @@ type Analysis = { id: string; evidence: string[]; excerpts?: Excerpt[] };
 function App() {
   const initialLanguage = localStorage.getItem('language') || navigator.language.split('-')[0];
   const [lang, setLang] = useState<Language>(initialLanguage === 'en' || initialLanguage === 'ja' ? initialLanguage : 'ko');
+  const [recent, setRecent] = useState(readRecent);
+  useEffect(() => {
+    const sync = (event: StorageEvent) => {
+      if (!event.key || event.key === recentKey) setRecent(readRecent());
+    };
+    window.addEventListener('storage', sync);
+    return () => window.removeEventListener('storage', sync);
+  }, []);
   const [text, setText] = useState('');
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [busy, setBusy] = useState(false);
@@ -57,6 +66,7 @@ function App() {
       if (!response.ok) throw Error();
       const data: Analysis = await response.json();
       setAnalysis(data);
+      setRecent(remember(data.id, input, recent));
       history.replaceState(null, '', '?result=' + data.id);
     } catch { setError('error'); }
     finally { setBusy(false); }
@@ -100,6 +110,14 @@ function App() {
             {before}<mark>{match}</mark>{after}</blockquote>)}<p>{t.note}</p></section>}
       </div>
 
+      <section className="recent" aria-labelledby="recent-title">
+        <h2 id="recent-title">{t.recent}</h2>
+        {recent.length === 0 ? <p>{t.noRecent}</p> :
+          <ol>{recent.map(item => <li key={item.source ?? item.id}>
+            <a className="recentResult" href={'?result=' + encodeURIComponent(item.id)}>{item.label}</a>
+            {item.source && <a className="recentSource" href={item.source} target="_blank" rel="noreferrer">{t.source}<ArrowUpRight size={15}/></a>}
+          </li>)}</ol>}
+      </section>
     </main></>;
 }
 createRoot(document.getElementById('root')!).render(<App/>);

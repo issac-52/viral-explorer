@@ -109,3 +109,10 @@ section blockquote small { display:block; font-size:13px; margin-bottom:4px; col
 @media (max-width: 400px) { h1 { font-size: 36px; overflow-wrap: anywhere; } }
 
 @media (max-width: 400px) { .bar { gap: 8px; } .language { gap: 0; } }
+
+.recent { order:4; }
+.recent ol { list-style:none; margin:16px 0 0; padding:0; }
+.recent li { display:flex; align-items:center; gap:16px; border-top:1px solid var(--line); }
+.recentResult { min-width:0; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:12px 0; }
+.recentSource { display:inline-flex; align-items:center; gap:3px; font-size:14px; padding:12px 0; }
+.recent a:hover { text-decoration:underline; }
