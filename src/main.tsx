@@ -3,7 +3,9 @@ import { createRoot } from 'react-dom/client';
 import { copy, type Language } from './copy';
 import './style.css';
 
-type Analysis = { id: string; evidence: string[] };
+import type { Excerpt } from '../worker/rules';
+
+type Analysis = { id: string; evidence: string[]; excerpts?: Excerpt[] };
 function App() {
   const initialLanguage = localStorage.getItem('language') || navigator.language.split('-')[0];
   const [lang, setLang] = useState<Language>(initialLanguage === 'en' || initialLanguage === 'ja' ? initialLanguage : 'ko');
@@ -64,7 +66,8 @@ function App() {
       </form>
       <div aria-live="polite">{error && <p role="alert">{t[error]}</p>}
         {analysis && <section><h2>{analysis.evidence.length ? t.found : t.empty}</h2>
-          {analysis.evidence.map(quote => <blockquote key={quote}>{quote}</blockquote>)}<p>{t.note}</p></section>}
+          {(analysis.excerpts ?? analysis.evidence.map(match => ({ before: '', match, after: '' })))
+            .map(({ before, match, after }) => <blockquote key={match}>{before}<mark>{match}</mark>{after}</blockquote>)}<p>{t.note}</p></section>}
       </div>
     </main></>;
 }

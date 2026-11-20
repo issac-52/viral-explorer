@@ -1,5 +1,5 @@
 // Increment when changing the rules or evidence format.
-export const rulesVersion = '2';
+export const rulesVersion = '3';
 const disclosures = [
   /(?:광고비|원고료)(?:를)?\s*받(?:았습니다|았어요|고 작성)/gu,
   /(?:저에게|제게)\s*(?:일정액의\s*)?수수료가\s*(?:지급됩니다|지급돼요)/gu,
@@ -11,13 +11,29 @@ const disclosures = [
   /\b(?:this (?:post|video) is sponsored by|i received (?:this|the) product for free)\b/gi,
   /(?:^|(?<=\s))#(?:광고|협찬|PR|広告|提供|ad|sponsored)(?![\p{L}\p{N}_])/giu
 ];
-export function findEvidence(text: string): string[] {
-  const quotes = new Set<string>();
+export type Excerpt = { before: string; match: string; after: string };
+
+export function findExcerpts(text: string): Excerpt[] {
+  const excerpts = new Map<string, Excerpt>();
   for (const rule of disclosures) {
     for (const match of text.matchAll(rule)) {
-      quotes.add(match[0]);
-      if (quotes.size === 8) return [...quotes];
+      if (excerpts.has(match[0])) continue;
+      const end = match.index + match[0].length;
+      // Keep nearby context within the paragraph. Count Unicode code points
+      // after slicing a bounded window so emoji at the edges stay intact.
+      const left = text.slice(Math.max(0, match.index - 96), match.index).split(/[\r\n]/).at(-1)!;
+      const right = text.slice(end, end + 144).split(/[\r\n]/, 1)[0];
+      excerpts.set(match[0], {
+        before: Array.from(left).slice(-48).join(''),
+        match: match[0],
+        after: Array.from(right).slice(0, 72).join('')
+      });
+      if (excerpts.size === 8) return [...excerpts.values()];
     }
   }
-  return [...quotes];
+  return [...excerpts.values()];
+}
+
+export function findEvidence(text: string): string[] {
+  return findExcerpts(text).map(excerpt => excerpt.match);
 }

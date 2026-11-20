@@ -17,3 +17,6 @@ button { background:#2c2c2a; color:white; border:0; border-radius:8px; padding:1
 button:disabled { opacity:.5; cursor:default; }
 h2 { margin:0; font-size:22px; font-weight:500; }
 blockquote { margin:12px 0; border-left:3px solid #93601c; padding:8px 14px; background:#fcf5e8; }
+
+blockquote { overflow-wrap: anywhere; }
+blockquote mark { background: #f6dfaa; color: inherit; }

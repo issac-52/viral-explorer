@@ -1,12 +1,16 @@
 import { postUrl, readPost } from './naver';
-import { findEvidence, rulesVersion } from './rules';
+import { findExcerpts, rulesVersion, type Excerpt } from './rules';
 
 const reply = (data: unknown, status = 200) => Response.json(data, {
   status, headers: { 'Cache-Control': 'no-store' }
 });
 type Row = { id: string; evidence: string };
 function result(row: Row, status = 200) {
-  return reply({ id: row.id, evidence: JSON.parse(row.evidence) }, status);
+  const stored: (string | Excerpt)[] = JSON.parse(row.evidence);
+  const excerpts = stored.map(item => typeof item === 'string'
+    ? { before: '', match: item, after: '' }
+    : item);
+  return reply({ id: row.id, evidence: excerpts.map(item => item.match), excerpts }, status);
 }
 
 export default {
@@ -54,7 +58,7 @@ export default {
     const lookup = env.DB.prepare('SELECT id, evidence FROM analyses WHERE cache_key = ?').bind(key);
     const cached = await lookup.first<Row>();
     if (cached) return result(cached);
-    const evidence = JSON.stringify(findEvidence(text));
+    const evidence = JSON.stringify(findExcerpts(text));
     const newId = crypto.randomUUID();
     await env.DB.prepare('INSERT INTO analyses(id, cache_key, evidence) VALUES (?, ?, ?) ON CONFLICT(cache_key) DO NOTHING')
       .bind(newId, key, evidence).run();
