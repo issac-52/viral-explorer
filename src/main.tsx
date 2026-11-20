@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { copy, type Language } from './copy';
 import * as Tabs from '@radix-ui/react-tabs';
-import { ScanText, ArrowUpRight, ArrowRight, Globe2, Quote, TextSearch, LoaderCircle } from 'lucide-react';
+import { ScanText, ArrowUpRight, ArrowRight, Globe2, Quote, History, LoaderCircle } from 'lucide-react';
 import { readRecent, recentKey, remember } from './recent';
 import './style.css';
 
@@ -74,15 +74,28 @@ function App() {
   return <>
     <header><div className="bar">
       <a className="brand" href="./"><ScanText aria-hidden="true"/><b>ExitViral</b></a>
-      <nav><a href="#checker">{t.nav}</a><a href="#example">{t.example}</a></nav>
+      <nav><a href="#checker">{t.nav}</a><a href="#recent">{t.recent}</a></nav>
       <div className="language"><Globe2 size={17} aria-hidden="true"/><select aria-label={t.language} value={lang} onChange={e => setLang(e.target.value as Language)}>
         <option value="ko">한국어</option><option value="ja">日本語</option><option value="en">English</option>
       </select></div></div></header>
     <main>
-      <div className="hero">
-        <div className="heading"><h1>{t.lead}<br/><em>{t.accent}</em></h1><p>{t.summary}</p></div>
+      <div className="heading"><h1>{t.title}</h1><p>{t.summary}</p></div>
+        <form id="checker" onSubmit={e => { e.preventDefault(); void analyze(text); }}>
+          <label htmlFor="review">{t.label}</label>
+          <textarea id="review" value={text} maxLength={20000} disabled={busy} placeholder={t.placeholder} onChange={e => setText(e.target.value)} />
+          <div className="actions"><small>{text.length.toLocaleString(lang)} / 20,000</small>
+            <button disabled={busy || !text.trim()}>{busy ? t.busy : t.run}{busy ? <LoaderCircle className="spinner" size={18}/> : <ArrowRight size={18}/>}</button></div>
+        </form>
+      <div aria-live="polite">{error && <p role="alert">{t[error]}</p>}
+        {analysis && <section id="analysis-result" tabIndex={-1} aria-labelledby="result-title"><h2 id="result-title">{analysis.evidence.length ? t.found : t.empty}</h2>
+          {excerpts.map(({ before, match, after, context }, index) => <blockquote key={index}>
+            <small>{context ? t[context] : t.wording}</small>
+            {before}<mark>{match}</mark>{after}</blockquote>)}<p>{t.note}</p></section>}
+      </div>
+
+      <div className="details">
         <aside id="example"><Tabs.Root value={example} onValueChange={setExample}>
-          <div className="paperTop"><Quote aria-hidden="true"/><h2>{t.example}</h2></div>
+          <div className="panelTitle"><Quote aria-hidden="true"/><h2>{t.example}</h2></div>
           <Tabs.List aria-label={t.example}>
             <Tabs.Trigger value="direct">{t.direct}</Tabs.Trigger>
             <Tabs.Trigger value="quotation">{t.quotation}</Tabs.Trigger>
@@ -96,28 +109,15 @@ function App() {
             }}>{t.trySample}<ArrowUpRight size={17}/></button>
           </Tabs.Content>)}
         </Tabs.Root></aside>
-      </div>
-        <form id="checker" onSubmit={e => { e.preventDefault(); void analyze(text); }}>
-          <h2><TextSearch aria-hidden="true"/>{t.formTitle}</h2><label htmlFor="review">{t.label}</label>
-          <textarea id="review" value={text} maxLength={20000} disabled={busy} placeholder={t.placeholder} onChange={e => setText(e.target.value)} />
-          <div className="actions"><small>{text.length.toLocaleString(lang)} / 20,000</small>
-            <button disabled={busy || !text.trim()}>{busy ? t.busy : t.run}{busy ? <LoaderCircle className="spinner" size={18}/> : <ArrowRight size={18}/>}</button></div>
-        </form>
-      <div aria-live="polite">{error && <p role="alert">{t[error]}</p>}
-        {analysis && <section id="analysis-result" tabIndex={-1} aria-labelledby="result-title"><h2 id="result-title">{analysis.evidence.length ? t.found : t.empty}</h2>
-          {excerpts.map(({ before, match, after, context }, index) => <blockquote key={index}>
-            <small>{context ? t[context] : t.wording}</small>
-            {before}<mark>{match}</mark>{after}</blockquote>)}<p>{t.note}</p></section>}
-      </div>
-
-      <section className="recent" aria-labelledby="recent-title">
-        <h2 id="recent-title">{t.recent}</h2>
+      <section id="recent" className="recent" aria-labelledby="recent-title">
+        <div className="panelTitle"><History aria-hidden="true"/><h2 id="recent-title">{t.recent}</h2></div>
         {recent.length === 0 ? <p>{t.noRecent}</p> :
           <ol>{recent.map(item => <li key={item.source ?? item.id}>
             <a className="recentResult" href={'?result=' + encodeURIComponent(item.id)}>{item.label}</a>
             {item.source && <a className="recentSource" href={item.source} target="_blank" rel="noreferrer">{t.source}<ArrowUpRight size={15}/></a>}
           </li>)}</ol>}
       </section>
+      </div>
     </main></>;
 }
 createRoot(document.getElementById('root')!).render(<App/>);
