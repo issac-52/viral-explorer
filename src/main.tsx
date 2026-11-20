@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { copy, type Language } from './copy';
+import * as Tabs from '@radix-ui/react-tabs';
+import { ScanText, ArrowUpRight, ArrowRight, Globe2, Quote, TextSearch, LoaderCircle } from 'lucide-react';
 import './style.css';
 
 import type { Excerpt } from '../worker/rules';
@@ -13,7 +15,11 @@ function App() {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<'error' | 'limited' | 'manual' | null>(null);
+  const [example, setExample] = useState('direct');
   const t = copy[lang];
+  const prefix = example === 'direct' ? t.prefix : t.quotePrefix;
+  const suffix = example === 'direct' ? t.suffix : t.quoteSuffix;
+  const excerpts: Excerpt[] = analysis?.excerpts ?? analysis?.evidence.map(match => ({ before: '', match, after: '' })) ?? [];
   useEffect(() => {
     document.documentElement.lang = lang;
     document.title = t.brand;
@@ -57,37 +63,43 @@ function App() {
   }
   return <>
     <header><div className="bar">
-      <a className="brand" href="./"><i aria-hidden="true">↗</i>{t.brand}</a>
+      <a className="brand" href="./"><ScanText aria-hidden="true"/><b>ExitViral</b></a>
       <nav><a href="#checker">{t.nav}</a><a href="#example">{t.example}</a></nav>
-      <select aria-label={t.language} value={lang} onChange={e => setLang(e.target.value as Language)}>
+      <div className="language"><Globe2 size={17} aria-hidden="true"/><select aria-label={t.language} value={lang} onChange={e => setLang(e.target.value as Language)}>
         <option value="ko">한국어</option><option value="ja">日本語</option><option value="en">English</option>
-      </select></div></header>
+      </select></div></div></header>
     <main>
       <div className="hero">
         <div className="heading"><h1>{t.lead}<br/><em>{t.accent}</em></h1><p>{t.summary}</p></div>
+        <aside id="example"><Tabs.Root value={example} onValueChange={setExample}>
+          <div className="paperTop"><Quote aria-hidden="true"/><h2>{t.example}</h2></div>
+          <Tabs.List aria-label={t.example}>
+            <Tabs.Trigger value="direct">{t.direct}</Tabs.Trigger>
+            <Tabs.Trigger value="quotation">{t.quotation}</Tabs.Trigger>
+          </Tabs.List>
+          {['direct', 'quotation'].map(kind => <Tabs.Content key={kind} value={kind}>
+            <blockquote>{prefix}<mark>{t.match}</mark>{suffix}</blockquote>
+            <button type="button" className="sampleButton" disabled={busy} onClick={() => {
+              const sample = prefix + t.match + suffix;
+              setText(sample);
+              void analyze(sample);
+            }}>{t.trySample}<ArrowUpRight size={17}/></button>
+          </Tabs.Content>)}
+        </Tabs.Root></aside>
+      </div>
         <form id="checker" onSubmit={e => { e.preventDefault(); void analyze(text); }}>
-          <h2>{t.formTitle}</h2><label htmlFor="review">{t.label}</label>
+          <h2><TextSearch aria-hidden="true"/>{t.formTitle}</h2><label htmlFor="review">{t.label}</label>
           <textarea id="review" value={text} maxLength={20000} disabled={busy} placeholder={t.placeholder} onChange={e => setText(e.target.value)} />
           <div className="actions"><small>{text.length.toLocaleString(lang)} / 20,000</small>
-            <button disabled={busy || !text.trim()}>{busy ? t.busy : t.run}<span aria-hidden="true"> →</span></button></div>
+            <button disabled={busy || !text.trim()}>{busy ? t.busy : t.run}{busy ? <LoaderCircle className="spinner" size={18}/> : <ArrowRight size={18}/>}</button></div>
         </form>
-      </div>
       <div aria-live="polite">{error && <p role="alert">{t[error]}</p>}
         {analysis && <section id="analysis-result" tabIndex={-1} aria-labelledby="result-title"><h2 id="result-title">{analysis.evidence.length ? t.found : t.empty}</h2>
-          {(analysis.excerpts ?? analysis.evidence.map(match => ({ before: '', match, after: '' })))
-            .map(({ before, match, after }) => <blockquote key={match}>{before}<mark>{match}</mark>{after}</blockquote>)}<p>{t.note}</p></section>}
+          {excerpts.map(({ before, match, after, context }, index) => <blockquote key={index}>
+            <small>{context ? t[context] : t.wording}</small>
+            {before}<mark>{match}</mark>{after}</blockquote>)}<p>{t.note}</p></section>}
       </div>
-      <aside id="example">
-        <div><h2>{t.example}</h2><p>{t.sampleType}</p></div>
-        <div className="sample"><blockquote>{t.prefix}<mark>{t.match}</mark>{t.suffix}</blockquote>
-          <button type="button" className="sampleButton" disabled={busy} onClick={() => {
-            const sample = t.prefix + t.match + t.suffix;
-            setText(sample);
-            document.getElementById('checker')?.scrollIntoView({ block: 'start' });
-            void analyze(sample);
-          }}>{t.trySample} <span aria-hidden="true">↗</span></button>
-        </div>
-      </aside>
+
     </main></>;
 }
 createRoot(document.getElementById('root')!).render(<App/>);

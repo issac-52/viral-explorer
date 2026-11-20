@@ -9,7 +9,9 @@
     "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
+    "@radix-ui/react-tabs": "^1.2.1",
     "cheerio": "^1.2.0",
+    "lucide-react": "^1.76.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "robots-parser": "^3.0.1"

@@ -1,7 +1,10 @@
 import { readFile } from 'node:fs/promises';
-import { findEvidence } from '../worker/rules.ts';
+import { findExcerpts } from '../worker/rules.ts';
 
-const cases = JSON.parse(await readFile(new URL('./cases.json', import.meta.url)));
+const publicCases = process.argv.includes('--public');
+const cases = publicCases
+  ? JSON.parse(await readFile(new URL('./public-ko.json', import.meta.url))).map(c => ['ko', c.context, c.direct, c.text])
+  : JSON.parse(await readFile(new URL('./cases.json', import.meta.url)));
 const live = process.argv.includes('--llm');
 const model = process.env.EVAL_MODEL || 'gpt-4o-mini';
 const rates = ['EVAL_INPUT_USD_PER_M', 'EVAL_OUTPUT_USD_PER_M'].map(key => {
@@ -42,12 +45,12 @@ for (const method of methods) {
   const rows = [];
   for (const [language, category, expected, text] of cases) {
     const { found, usd } = method === 'rules'
-      ? { found: findEvidence(text).length > 0, usd: 0 }
+      ? { found: findExcerpts(text).some(excerpt => !excerpt.context), usd: 0 }
       : await classify(text);
     rows.push({ language, expected, found, usd });
     if (found !== expected) console.log(method, language, category, expected ? 'MISS' : 'FALSE ALARM', text);
   }
-  for (const language of ['ko', 'ja', 'en']) {
+  for (const language of new Set(rows.map(row => row.language))) {
     const subset = rows.filter(row => row.language === language);
     const positives = subset.filter(row => row.expected);
     const negatives = subset.filter(row => !row.expected);

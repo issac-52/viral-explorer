@@ -22,3 +22,8 @@ test('excerpts retain local attribution and denials in the source language', () 
     assert.equal(excerpt.before + excerpt.match + excerpt.after, line);
   }
 });
+
+test('a quoted disclosure does not hide the author’s own disclosure later in the review', () => {
+  const excerpts = findExcerpts('옆 글에는 ‘제품을 제공받아 작성했습니다’라고 썼다.\n업체로부터 제품을 제공받아 작성했습니다.');
+  assert.deepEqual(excerpts.map(item => item.context), ['quoted', undefined]);
+});
