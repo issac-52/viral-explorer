@@ -107,3 +107,5 @@ section blockquote small { display:block; font-size:13px; margin-bottom:4px; col
 }
 
 @media (max-width: 400px) { h1 { font-size: 36px; overflow-wrap: anywhere; } }
+
+@media (max-width: 400px) { .bar { gap: 8px; } .language { gap: 0; } }
