@@ -1,4 +1,4 @@
-import { postUrl, readPost } from './naver';
+import { postUrl, readPost } from './articles';
 import { findExcerpts, rulesVersion, type Excerpt } from './rules';
 
 const reply = (data: unknown, status = 200) => Response.json(data, {
