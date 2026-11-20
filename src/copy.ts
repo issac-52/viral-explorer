@@ -1,6 +1,42 @@
 export const copy = {
-  ko: { manual:'이 링크에서 본문을 가져올 수 없어요. 주소 대신 후기 본문을 붙여넣어 주세요.', limited:'요청이 많아요. 1분 후 다시 시도해 주세요.', brand:'엑싯바이럴', language:'표시 언어', title:'이 후기, 협찬일까?', intro:'후기 본문에서 광고·협찬을 알리는 표현을 찾아보세요.', label:'네이버 블로그 글 주소 또는 후기 본문', placeholder:'확인하고 싶은 후기를 붙여넣으세요.', run:'고지 문구 찾기', busy:'확인 중…', found:'고지와 관련된 표현을 찾았어요', empty:'등록된 고지 표현을 찾지 못했어요', note:'문맥에 따라 잘못 감지하거나 고지를 놓칠 수 있어요. 실제 협찬 여부는 원문과 함께 판단하세요.', error:'요청을 처리할 수 없어요. 다시 시도해 주세요.' },
-  ja: { manual:'本文を取得できませんでした。URLの代わりにレビュー本文を貼り付けてください。', limited:'リクエストが集中しています。1分後にお試しください。', brand:'ExitViral', language:'表示言語', title:'このレビュー、PRかな？', intro:'レビュー本文から広告や提供に関する表現を探します。', label:'ネイバーブログの記事URLまたはレビュー本文', placeholder:'確認したいレビューを貼り付けてください。', run:'表記を確認', busy:'確認中…', found:'広告・提供に関連する表現が見つかりました', empty:'登録済みの表現は見つかりませんでした', note:'文脈による誤検出や見落としがあります。実際の提供関係は原文とあわせてご判断ください。', error:'リクエストを処理できませんでした。もう一度お試しください。' },
-  en: { manual:'Unable to import this link. Replace the URL with the review text.', limited:'Too many requests. Try again in a minute.', brand:'ExitViral', language:'Display language', title:'Does this review mention sponsorship?', intro:'Look for advertising and sponsorship disclosures in a review.', label:'Naver Blog post URL or review text', placeholder:'Paste the review you want to check.', run:'Check disclosures', busy:'Checking…', found:'Possible disclosure wording found', empty:'No known disclosure wording found', note:'Matches can be misleading and disclosures can be missed. Read the original context when assessing sponsorship.', error:'Unable to complete the request. Please try again.' }
+  ko: {
+    nav: "후기 분석",
+    example: "분석 예시",
+    lead: "구매하기 전,",
+    accent: "후기를 읽는 단서",
+    summary: "네이버 블로그 링크나 후기 본문을 넣으면 광고·협찬을 알리는 표현을 원문에서 찾아드려요.",
+    formTitle: "분석할 후기",
+    trySample: "예시로 분석하기",
+    sampleType: "제품 제공",
+    prefix: "업체로부터 ",
+    match: "제품을 제공받아",
+    suffix: " 일주일 동안 사용한 뒤 작성했습니다.",
+    manual:'이 링크에서 본문을 가져올 수 없어요. 주소 대신 후기 본문을 붙여넣어 주세요.', limited:'요청이 많아요. 1분 후 다시 시도해 주세요.', brand:'엑싯바이럴', language:'표시 언어', title:'이 후기, 협찬일까?', intro:'후기 본문에서 광고·협찬을 알리는 표현을 찾아보세요.', label:'네이버 블로그 글 주소 또는 후기 본문', placeholder:'확인하고 싶은 후기를 붙여넣으세요.', run:'고지 문구 찾기', busy:'확인 중…', found:'고지와 관련된 표현을 찾았어요', empty:'등록된 고지 표현을 찾지 못했어요', note:'문맥에 따라 잘못 감지하거나 고지를 놓칠 수 있어요. 실제 협찬 여부는 원문과 함께 판단하세요.', error:'요청을 처리할 수 없어요. 다시 시도해 주세요.' },
+  ja: {
+    nav: "レビュー分析",
+    example: "分析例",
+    lead: "購入する前に、",
+    accent: "レビューを読み解く",
+    summary: "ネイバーブログのURLやレビュー本文から、広告・提供を示す表現を探します。",
+    formTitle: "レビューを入力",
+    trySample: "例文を分析する",
+    sampleType: "商品提供",
+    prefix: "メーカーから",
+    match: "商品をご提供いただき",
+    suffix: "、一週間使用してから書きました。",
+    manual:'本文を取得できませんでした。URLの代わりにレビュー本文を貼り付けてください。', limited:'リクエストが集中しています。1分後にお試しください。', brand:'ExitViral', language:'表示言語', title:'このレビュー、PRかな？', intro:'レビュー本文から広告や提供に関する表現を探します。', label:'ネイバーブログの記事URLまたはレビュー本文', placeholder:'確認したいレビューを貼り付けてください。', run:'表記を確認', busy:'確認中…', found:'広告・提供に関連する表現が見つかりました', empty:'登録済みの表現は見つかりませんでした', note:'文脈による誤検出や見落としがあります。実際の提供関係は原文とあわせてご判断ください。', error:'リクエストを処理できませんでした。もう一度お試しください。' },
+  en: {
+    nav: "Review checker",
+    example: "Example",
+    lead: "Before you buy,",
+    accent: "read the fine print.",
+    summary: "Find advertising and sponsorship disclosures in a Naver Blog link or pasted review.",
+    formTitle: "Check a review",
+    trySample: "Analyze this example",
+    sampleType: "Gifted product",
+    prefix: "",
+    match: "I received this product for free",
+    suffix: " and used it for a week before writing this review.",
+    manual:'Unable to import this link. Replace the URL with the review text.', limited:'Too many requests. Try again in a minute.', brand:'ExitViral', language:'Display language', title:'Does this review mention sponsorship?', intro:'Look for advertising and sponsorship disclosures in a review.', label:'Naver Blog post URL or review text', placeholder:'Paste the review you want to check.', run:'Check disclosures', busy:'Checking…', found:'Possible disclosure wording found', empty:'No known disclosure wording found', note:'Matches can be misleading and disclosures can be missed. Read the original context when assessing sponsorship.', error:'Unable to complete the request. Please try again.' }
 };
 export type Language = keyof typeof copy;
