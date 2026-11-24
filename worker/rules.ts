@@ -47,21 +47,26 @@ function contextHint(before: string, after: string): Excerpt['context'] {
   if (/^(?:\s*사용한 뒤.{0,20}프로그램|다는 사실이.{0,15}표시되어야)/.test(after)) return 'general';
 }
 
+export function excerptAt(text: string, index: number, length: number): Excerpt {
+  const match = text.slice(index, index + length);
+  const end = index + length;
+  // Keep nearby context within the paragraph. Count Unicode code points
+  // after slicing a bounded window so emoji at the edges stay intact.
+  const left = text.slice(Math.max(0, index - 96), index).split(/[\r\n]/).at(-1)!;
+  const right = text.slice(end, end + 144).split(/[\r\n]/, 1)[0];
+  const before = Array.from(left).slice(-48).join('');
+  const after = Array.from(right).slice(0, 72).join('');
+  return { before, context: contextHint(before, after), match, after };
+}
+
 export function findExcerpts(text: string): Excerpt[] {
   const excerpts = new Map<string, Excerpt>();
   for (const rule of disclosures) {
     for (const match of text.matchAll(rule)) {
-      const end = match.index + match[0].length;
-      // Keep nearby context within the paragraph. Count Unicode code points
-      // after slicing a bounded window so emoji at the edges stay intact.
-      const left = text.slice(Math.max(0, match.index - 96), match.index).split(/[\r\n]/).at(-1)!;
-      const right = text.slice(end, end + 144).split(/[\r\n]/, 1)[0];
-      const before = Array.from(left).slice(-48).join('');
-      const after = Array.from(right).slice(0, 72).join('');
-      const context = contextHint(before, after);
-      const key = JSON.stringify([match[0], context]);
+      const excerpt = excerptAt(text, match.index, match[0].length);
+      const key = JSON.stringify([excerpt.match, excerpt.context]);
       if (excerpts.has(key)) continue;
-      excerpts.set(key, { before, context, match: match[0], after });
+      excerpts.set(key, excerpt);
       if (excerpts.size === 8) return [...excerpts.values()];
     }
   }

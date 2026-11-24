@@ -2,6 +2,9 @@
   "name": "exitviral",
   "main": "worker/index.ts",
   "compatibility_date": "2025-10-01",
+  // AI context analysis turns on when the AI_API_KEY secret is set.
+  // Any OpenAI-compatible chat completions endpoint works.
+  "vars": { "AI_MODEL": "gpt-4o-mini", "AI_BASE_URL": "https://api.openai.com/v1" },
   "assets": { "directory": "./dist", "run_worker_first": ["/api/*"] },
   "ratelimits": [{
     "name": "ANALYSIS_LIMIT",
