@@ -8,7 +8,7 @@ test('desktop and PostView URLs resolve to a fixed mobile post', () => {
   assert.equal(postUrl('https://example.com/reviewer/123'), undefined);
 });
 test('extracts only the article and preserves paragraph boundaries', async () => {
-  const text = await readPost(url, async path => path.endsWith('robots.txt')
+  const { text } = await readPost(url, async path => path.endsWith('robots.txt')
     ? new Response('User-agent: *\nAllow: /')
     : new Response('<aside>#ad</aside><div class="se-main-container"><p>First</p><p>#협찬</p></div>', {headers:{'Content-Type':'text/html'}}));
   assert.equal(text, 'First\n#협찬');
@@ -28,9 +28,16 @@ test('extracts hosted articles without site navigation or comment evidence', asy
     ['https://example.wordpress.com/2026/11/20/review', 'class="entry-content"'],
     ['https://dev.to/example/review-123', 'id="article-body"']
   ]) {
-    const text = await readPost(url, async path => path.endsWith('robots.txt')
+    const { text } = await readPost(url, async path => path.endsWith('robots.txt')
       ? new Response(null, {status:404})
       : new Response('<nav>#ad</nav><div ' + attribute + '><p>My review</p><aside>#ad</aside></div>', {headers:{'Content-Type':'text/html'}}));
     assert.equal(text, 'My review');
   }
+});
+
+test('collects links from the post body only, resolved against the post URL', async () => {
+  const { links } = await readPost(url, async path => path.endsWith('robots.txt')
+    ? new Response('User-agent: *\nAllow: /')
+    : new Response('<nav><a href="https://coupa.ng/nav">x</a></nav><div class="se-main-container"><p><a href="https://www.revu.net/campaign/1"><img alt=""></a>후기</p><p><a href="/other/1">내 다른 글</a><a href="javascript:void(0)">x</a></p></div>', {headers:{'Content-Type':'text/html'}}));
+  assert.deepEqual(links, ['https://www.revu.net/campaign/1', 'https://m.blog.naver.com/other/1']);
 });

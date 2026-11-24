@@ -29,6 +29,8 @@ function App() {
   const prefix = example === 'direct' ? t.prefix : t.quotePrefix;
   const suffix = example === 'direct' ? t.suffix : t.quoteSuffix;
   const excerpts: Excerpt[] = analysis?.excerpts ?? analysis?.evidence.map(match => ({ before: '', match, after: '' })) ?? [];
+  const hasWording = excerpts.some(item => !item.link);
+  const hasLinks = excerpts.some(item => item.link);
   useEffect(() => {
     document.documentElement.lang = lang;
     document.title = t.brand;
@@ -87,10 +89,10 @@ function App() {
             <button disabled={busy || !text.trim()}>{busy ? t.busy : t.run}{busy ? <LoaderCircle className="spinner" size={18}/> : <ArrowRight size={18}/>}</button></div>
         </form>
       <div aria-live="polite">{error && <p role="alert">{t[error]}</p>}
-        {analysis && <section id="analysis-result" tabIndex={-1} aria-labelledby="result-title"><h2 id="result-title">{analysis.evidence.length ? t.found : t.empty}</h2>
-          {excerpts.map(({ before, match, after, context }, index) => <blockquote key={index}>
-            <small>{context ? t[context] : t.wording}</small>
-            {before}<mark>{match}</mark>{after}</blockquote>)}<p>{t.note}</p></section>}
+        {analysis && <section id="analysis-result" tabIndex={-1} aria-labelledby="result-title"><h2 id="result-title">{hasWording ? t.found : hasLinks ? t.foundLinks : t.empty}</h2>
+          {excerpts.map(({ before, match, after, context, link }, index) => <blockquote key={index} className={link ? 'link' : undefined}>
+            <small>{link ? t[link] : context ? t[context] : t.wording}</small>
+            {before}<mark>{match}</mark>{after}</blockquote>)}<p>{hasLinks ? t.linkNote + ' ' : ''}{t.note}</p></section>}
       </div>
 
       <div className="details">

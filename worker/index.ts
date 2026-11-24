@@ -1,4 +1,5 @@
 import { postUrl, readPost } from './articles';
+import { findLinkExcerpts, urlsIn } from './links';
 import { findExcerpts, rulesVersion, type Excerpt } from './rules';
 
 const reply = (data: unknown, status = 200) => Response.json(data, {
@@ -46,19 +47,23 @@ export default {
     try { body = JSON.parse(raw + decoder.decode()); }
     catch { return reply({ error: 'input' }, 400); }
     let text = typeof body?.text === 'string' ? body.text.trim() : '';
+    let links: string[] = [];
     if (body?.url !== undefined) {
       const url = typeof body.url === 'string' && postUrl(body.url);
       if (!url || body.text !== undefined) return reply({ error: 'unsupported_url' }, 422);
-      try { text = await readPost(url); }
+      try { ({ text, links } = await readPost(url)); }
       catch (err) { console.warn('Import failed', err instanceof Error ? err.name + ' ' + err.message : 'unknown'); return reply({ error: 'manual_input' }, 422); }
     }
     if (!text || text.length > 20000) return reply({ error: 'input' }, 400);
-    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rulesVersion + '\n' + text));
+    // Links hidden behind banners are part of the input, so they belong in the key.
+    const linkExcerpts = findLinkExcerpts([...links, ...urlsIn(text)]);
+    const keyInput = rulesVersion + '\n' + text + '\n\0' + linkExcerpts.map(item => item.match).join('\n');
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(keyInput));
     const key = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
     const lookup = env.DB.prepare('SELECT id, evidence FROM analyses WHERE cache_key = ?').bind(key);
     const cached = await lookup.first<Row>();
     if (cached) return result(cached);
-    const evidence = JSON.stringify(findExcerpts(text));
+    const evidence = JSON.stringify([...findExcerpts(text), ...linkExcerpts]);
     const newId = crypto.randomUUID();
     await env.DB.prepare('INSERT INTO analyses(id, cache_key, evidence) VALUES (?, ?, ?) ON CONFLICT(cache_key) DO NOTHING')
       .bind(newId, key, evidence).run();

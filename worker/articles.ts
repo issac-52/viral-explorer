@@ -37,7 +37,9 @@ async function readLimited(response: Response, limit: number) {
   }
 }
 
-export async function readPost(url: string, request = fetch) {
+export type Post = { text: string; links: string[] };
+
+export async function readPost(url: string, request = fetch): Promise<Post> {
   const options = { redirect: 'manual' as const, signal: AbortSignal.timeout(10000), headers: { 'User-Agent': agent } };
   const canonical = postUrl(url);
   if (!canonical) throw Error('Unsupported URL');
@@ -61,9 +63,16 @@ export async function readPost(url: string, request = fetch) {
     throw Error('Expected a single post');
   }
   body.find('script, style, noscript, nav, aside, form, .sharedaddy, #comments, [hidden]').remove();
+  const links = new Set<string>();
+  body.find('a[href]').each((_, el) => {
+    try {
+      const href = new URL($(el).attr('href')!, url);
+      if (href.protocol === 'https:' || href.protocol === 'http:') links.add(href.href);
+    } catch { /* Ignore malformed links. */ }
+  });
   body.find('br').replaceWith('\n');
   body.find('p, div, li').append('\n');
   const text = body.text().trim();
   if (!text || text.length > 20000) throw Error('Manual input required');
-  return text;
+  return { text, links: [...links].slice(0, 200) };
 }
