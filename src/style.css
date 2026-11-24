@@ -61,6 +61,8 @@ nav a:hover, .sampleButton:hover, .recent a:hover { text-decoration: underline; 
 #analysis-result, [role=alert] { max-width: 748px; margin: 20px auto 0; padding: 20px; border-radius: 12px; background: #f5f7fa; }
 #analysis-result blockquote { background: white; border-left: 3px solid #809fce; padding: 12px 16px; margin-top: 12px; }
 #analysis-result small { display: block; margin-bottom: 4px; }
+#analysis-result blockquote.link { border-left-color: #b98a2e; }
+#analysis-result blockquote.link mark { color: #6b4a0c; background: #fbefd5; }
 #analysis-result p { margin-top: 12px; }
 [role=alert] { color: #8c3636; }
 @media (max-width: 680px) {
