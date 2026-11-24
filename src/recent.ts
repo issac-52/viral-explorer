@@ -21,3 +21,7 @@ export function remember(id: string, input: string, current: Item[]): Item[] {
   try { localStorage.setItem(recentKey, JSON.stringify(next)); } catch { /* Keep the in-memory list. */ }
   return next;
 }
+export function forgetRecent(): Item[] {
+  try { localStorage.removeItem(recentKey); } catch { /* Nothing stored. */ }
+  return [];
+}
